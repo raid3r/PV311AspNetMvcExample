@@ -18,6 +18,12 @@ public class SiteContext: IdentityDbContext<User, IdentityRole<int>, int>
     {
         base.OnModelCreating(modelBuilder);
 
+        // modelBuilder.Entity<IdentityRole<int>>()
+        //     .HasData(
+        //         new IdentityRole<int> { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
+        //         new IdentityRole<int> { Id = 2, Name = "User", NormalizedName = "USER" }
+        //         );
+        
         modelBuilder.Entity<ImageFile>()
             .HasMany(x => x.UserInfos)
             .WithMany(x => x.ImageFiles)
