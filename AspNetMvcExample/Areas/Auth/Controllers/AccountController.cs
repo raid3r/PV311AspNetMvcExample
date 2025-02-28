@@ -14,9 +14,8 @@ public class AccountController(
     SignInManager<User> signInManager,
     UserManager<User> userManager,
     SiteContext context
-    ) : Controller
+) : Controller
 {
-
     [HttpGet]
     public async Task<IActionResult> Register(string returnUrl = "")
     {
@@ -53,11 +52,14 @@ public class AccountController(
             return View(form);
         }
 
+        await userManager.AddToRoleAsync(user, "User");
+
         await signInManager.SignInWithClaimsAsync(user, true,
         [
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("Avatar", user.Image?.Src ?? "")
+            new Claim("Avatar", user.Image?.Src ?? ""),
+            new Claim(ClaimTypes.Role, "User")
         ]);
 
         //var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
@@ -76,13 +78,13 @@ public class AccountController(
         // Авторизувати користувача як новоствореного користувача
         //await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal);
 
+        if (string.IsNullOrEmpty(returnUrl))
+        {
+            return RedirectToAction("Index", new { Area = "", Controller = "Home" });
+        }
 
         return Redirect(returnUrl);
     }
-
-
-
-
 
 
     [HttpGet]
@@ -117,39 +119,31 @@ public class AccountController(
         //}
 
         var result = await signInManager.CheckPasswordSignInAsync(user, form.Password, false);
-        if (! result.Succeeded) { 
+        if (!result.Succeeded)
+        {
             ModelState.AddModelError(nameof(form.Login), "Wrong password");
             return View(form);
         }
 
-        await signInManager.SignInWithClaimsAsync(user, true,
-        [
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("Avatar", user.Image?.Src ?? "")
-        ]);
+
+        var claims = new List<Claim>()
+        {
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new("Avatar", user.Image?.Src ?? "")
+        };
+        
+        var userRoles = await userManager.GetRolesAsync(user);
+        claims.AddRange(userRoles.Select(x => new Claim(ClaimTypes.Role, x)));
+        
+        await signInManager.SignInWithClaimsAsync(user, true, claims);
 
 
-        //var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
-        //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
-        //identity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
-        //identity.AddClaim(new Claim("Avatar", user.Image?.Src ?? ""));
-
-        ////var userRoles = await _userManager.GetRolesAsync(user);
-        ////userRoles.ToList().ForEach(r =>
-        ////{
-        ////    identity.AddClaim(new Claim(ClaimTypes.Role, r));
-        ////});
-
-        //var principal = new ClaimsPrincipal(identity);
-
-        //// Авторизувати користувача як новоствореного користувача
-        //await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal);
-
-        if (String.IsNullOrEmpty(returnUrl))
+        if (string.IsNullOrEmpty(returnUrl))
         {
             return RedirectToAction("Index", new { Area = "", Controller = "Home" });
         }
+
         return Redirect(returnUrl);
     }
 
