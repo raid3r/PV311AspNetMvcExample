@@ -4,10 +4,13 @@ using AspNetMvcExample.Models.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AspNetMvcExample.Controllers;
 
+[Authorize(Roles = "Admin,User")]
+[Route("user-infos-data")]
 public class UserInfoController(
     ILogger<UserInfoController> logger,
     SiteContext context,
@@ -19,6 +22,7 @@ public class UserInfoController(
     /// Перегляд списку усіх наявних
     /// </summary>
     /// <returns></returns>
+    [HttpGet("list")]
     public IActionResult Index()
     {
         return View(
@@ -37,6 +41,7 @@ public class UserInfoController(
     /// </summary>
     /// <param name="id">Ід потрібного елементу</param>
     /// <returns></returns>
+    [HttpGet("{id:int}/view")]
     public IActionResult View(int id) // 1 2
     {
         return View(
@@ -54,6 +59,7 @@ public class UserInfoController(
     /// </summary>
     /// <param name="id">Ід потрібного елементу</param>
     /// <returns></returns>
+    [HttpGet("{id:int}/view")]
     public IActionResult ViewPartial(int id) // 1 2
     {
         return PartialView(
@@ -67,7 +73,7 @@ public class UserInfoController(
             );
     }
 
-    [HttpGet]
+    [HttpGet("create-info")]
     public IActionResult Create()
     {
         var model = new UserInfoForm(new UserInfo());
@@ -75,7 +81,7 @@ public class UserInfoController(
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("create-info")]
     public async Task<IActionResult> Create([FromForm] UserInfoForm form)
     {
         if (!ModelState.IsValid)
@@ -101,7 +107,7 @@ public class UserInfoController(
         return RedirectToAction("Index");
     }
 
-    [HttpGet]
+    [HttpGet("{id:int}/edit")]
     public async Task<IActionResult> Edit(int id)
     {
         ViewData["id"] = id;
@@ -133,7 +139,7 @@ public class UserInfoController(
         return View(form);
     }
 
-    [HttpPost]
+    [HttpPost("{id:int}/edit")]
     public async Task<IActionResult> Edit(int id, [FromForm] UserInfoForm form)
     {
 
@@ -186,6 +192,7 @@ public class UserInfoController(
     }
 
 
+    [HttpGet("change-main-image")]
     public async Task<IActionResult> ChangeMainImage(int id, [FromQuery] int imageId)
     {
         var model = await context.UserInfos
@@ -199,19 +206,16 @@ public class UserInfoController(
         return Json(new { Ok = true });
     }
 
-    [HttpDelete]
+    [HttpDelete("{id:int}/delete-skill")]
     public async Task<IActionResult> DeleteSkill(int id)
     {
         var userSkill = await context.UserSkills.FirstAsync(x => x.Id == id);
-        if (userSkill != null)
-        {
-            context.UserSkills.Remove(userSkill);
-            await context.SaveChangesAsync();
-        }
+        context.UserSkills.Remove(userSkill);
+        await context.SaveChangesAsync();
         return Json(new { Ok = true });
     }
 
-    [HttpPost]
+    [HttpPost("{id:int}/add-skill")]
     public async Task<IActionResult> AddSkill(int id, [FromBody] UserSkillForm data)
     {
         var user = await context.UserInfos
@@ -243,7 +247,7 @@ public class UserInfoController(
     }
 
 
-    [HttpGet]
+    [HttpGet("{id:int}/edit-with-js")]
     public async Task<IActionResult> EditV2(int id)
     {
         ViewData["id"] = id;
@@ -269,7 +273,7 @@ public class UserInfoController(
             {
                 SkillId = s.Id,
                 Selected = userSkill != null,
-                Level = userSkill != null ? userSkill.Level : 0,
+                Level = userSkill?.Level ?? 0,
             };
         }).ToList();
 
@@ -279,7 +283,7 @@ public class UserInfoController(
         return View("EditWithoutJS", form);
     }
 
-    [HttpPost]
+    [HttpPost("{id:int}/edit-with-js")]
     public async Task<IActionResult> EditV2(int id, [FromForm] UserInfoForm form, [FromForm] List<UserSkillForm>? userSkillForms)
     {
         var skills = await context.Skills.ToListAsync();

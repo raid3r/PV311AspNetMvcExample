@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AspNetMvcExample.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class ProfessionController(
     ILogger<ProfessionController> logger,
     SiteContext context

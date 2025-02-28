@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AspNetMvcExample.Controllers;
 
 
+[Authorize(Roles = "Admin")]
 public class SkillController(
     ILogger<SkillController> logger,
     SiteContext context,
