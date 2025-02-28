@@ -1,0 +1,29 @@
+﻿@model UserInfo
+@{
+}
+
+<div class="card">
+    @if (Model.MainImageFile != null)
+    {
+        <img src="@Model.MainImageFile.Src" class="card-img-top" alt="@Model.Name">
+    }
+    <div class="card-body">
+        <h5 class="card-title">@Model.Name</h5>
+        <p><span>Професія</span>: @Model.Profession?.Title</p>
+        <p class="card-text">
+            @Model.Description
+        </p>
+        <div>
+            @foreach (var skill in Model.UserSkills)
+            {
+                <span class="badge rounded-pill" style="background-color: @skill.Skill.Color">
+                    @if(skill.Skill.ImageFile != null)
+                    {
+                        <img style="width: 20px;" src="@skill.Skill.ImageFile.Src" alt="@skill.Skill.Title" />
+                    }
+                    @skill.Skill.Title
+                    </span>
+            }
+        </div>
+    </div>
+</div>

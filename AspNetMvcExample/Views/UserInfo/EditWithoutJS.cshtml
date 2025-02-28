@@ -1,0 +1,77 @@
+﻿@model UserInfoForm
+@{
+    ViewData["Title"] = "Edit " + Model.Name;
+
+    var i = 0;
+    var list = new SelectList(Model
+        .Professions
+        .Select(x => new { Id = i++, Title = x })
+        .ToList(), "Id", "Title");
+
+    var userSkillForms = ViewData["userSkillForms"] as List<UserSkillForm>;
+    var skills = ViewData["skills"] as List<Skill>;
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <form method="post" enctype="multipart/form-data" asp-controller="UserInfo" asp-action="EditV2" asp-route-id="@ViewData["id"]">
+        <div class="card">
+            <div class="card-body">
+                @await Html.PartialAsync("_UserInfoFormFields", Model, new ViewDataDictionary(ViewData) { { "professions", list } })
+            </div>
+            <div>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>Image</th>
+                            <th>Title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int idx = 0;
+                        }
+                        @foreach (var item in userSkillForms)
+                        {
+                            var skill = skills.First(x => x.Id == item.SkillId);
+
+                            <tr>
+                                <td>
+                                    <div class="mb-3 form-check">
+                                        @Html.CheckBox($"userSkillForms[{idx}].Selected", item.Selected, new { @class = "form-check-input" })
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <input type="hidden" name="userSkillForms[@idx].SkillId" value="@item.SkillId">
+                                    @Html.TextBox($"userSkillForms[{idx}].Level", item.Level, new { @class = "form-control", type = "number", min = 0, max = 99, step = 1 })
+                                </td>
+                                <td>
+                                    @if (skill.ImageFile != null)
+                                    {
+                                        <img style="max-width: 50px;" class="img-thumbnail" src="@skill.ImageFile.Src" />
+                                    }
+                                </td>
+                                <td>@skill.Title</td>
+
+                            </tr>
+                            idx++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+
+        </div>
+    </form>
+
+    <a asp-area=""
+       asp-controller="UserInfo"
+       asp-action="Index"
+       class="btn btn-outline-success">Return</a>
+</div>
+
