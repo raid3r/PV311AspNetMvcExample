@@ -10,6 +10,7 @@ using AspNetMvcExample.Migrations;
 
 namespace AspNetMvcExample.Areas.Auth.Controllers;
 
+[Route("profile")]
 [Area("Auth")]
 [Authorize]
 public class ProfileController(
@@ -17,9 +18,8 @@ public class ProfileController(
     SignInManager<User> signInManager,
     SiteContext context,
     FileStorage fileStorage
-    ) : Controller
+) : Controller
 {
-
     private async Task<User> GetCurrentUserAsync()
     {
         var id = int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
@@ -28,12 +28,13 @@ public class ProfileController(
             .FirstAsync(x => x.Id == id);
     }
 
+    [HttpGet("index")]
     public async Task<IActionResult> Index()
     {
         return View(await GetCurrentUserAsync());
     }
 
-    [HttpGet]
+    [HttpGet("edit")]
     public async Task<IActionResult> Edit()
     {
         var user = await GetCurrentUserAsync();
@@ -45,7 +46,7 @@ public class ProfileController(
         });
     }
 
-    [HttpPost]
+    [HttpPost("edit")]
     public async Task<IActionResult> Edit([FromForm] ProfileForm form)
     {
         if (!ModelState.IsValid)
@@ -64,8 +65,10 @@ public class ProfileController(
                 fileStorage.Delete(model.Image);
                 context.ImageFiles.Remove(model.Image);
             }
+
             model.Image = await fileStorage.SaveAsync(form.Image);
         }
+
         await context.SaveChangesAsync();
 
 
@@ -80,4 +83,62 @@ public class ProfileController(
         return RedirectToAction("Index");
     }
 
+    [HttpGet("change-password")]
+    public IActionResult ChangePassword()
+    {
+        return View(new ChangePasswordForm());
+    }
+
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordForm form)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(form);
+        }
+
+        if (form.NewPassword != form.ConfirmPassword)
+        {
+            ModelState.AddModelError(nameof(form.ConfirmPassword),
+                "New password and confirmation password do not match.");
+            return View(form);
+        }
+
+        var user = await GetCurrentUserAsync();
+        var result = await userManager.ChangePasswordAsync(user, form.Password, form.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(nameof(form.Password), error.Description);
+            }
+
+            return View(form);
+        }
+
+        await signInManager.SignOutAsync();
+
+        var claims = new List<Claim>()
+        {
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new("Avatar", user.Image?.Src ?? "")
+        };
+
+        var userRoles = await userManager.GetRolesAsync(user);
+        claims.AddRange(userRoles.Select(x => new Claim(ClaimTypes.Role, x)));
+
+        await signInManager.SignInWithClaimsAsync(user, true, claims);
+
+        return RedirectToAction("Index");
+    }
+
+    [HttpDelete("api/delete")]
+    public async Task<IActionResult> Delete()
+    {
+        await userManager.DeleteAsync(await GetCurrentUserAsync());
+        await signInManager.SignOutAsync();
+        return Json(new { success = true });
+    }
 }
