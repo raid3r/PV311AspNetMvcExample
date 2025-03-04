@@ -1,5 +1,6 @@
 using AspNetMvcExample.Areas.Auth.Models.Forms;
 using AspNetMvcExample.Models;
+using AspNetMvcExample.Models.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,10 @@ namespace AspNetMvcExample.Areas.Auth.Controllers;
 [Area("Auth")]
 [Authorize(Roles = "Admin")]
 public class UserController(
-    UserManager<User> userManager, 
-    RoleManager<IdentityRole<int>> roleManager
+    UserManager<User> userManager,
+    RoleManager<IdentityRole<int>> roleManager,
+    FileStorage fileStorage,
+    SiteContext context
     ) : Controller
 {
     public async Task<IActionResult> Index()
@@ -37,7 +40,9 @@ public class UserController(
     [HttpPost]
     public async Task<IActionResult> Edit(int id, [FromForm] ProfileForm profileForm)
     {
-        var user = await userManager.FindByIdAsync(id.ToString());
+        var user = await context.Users
+            .Include(x => x.Image)
+            .FirstAsync(x => x.Id == id);
         
         if (!ModelState.IsValid)
         {
@@ -49,6 +54,20 @@ public class UserController(
 
         user.FullName = profileForm.FullName;
         user.PhoneNumber = profileForm.Phone;
+        
+        if (profileForm.Image != null)
+        {
+            if (user.Image != null)
+            {
+                fileStorage.Delete(user.Image);
+                context.ImageFiles.Remove(user.Image);
+            }
+
+            user.Image = await fileStorage.SaveAsync(profileForm.Image);
+        }
+
+        await context.SaveChangesAsync();
+        
         await userManager.UpdateAsync(user);
         return RedirectToAction(nameof(Index));
     }
