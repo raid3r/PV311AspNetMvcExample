@@ -23,9 +23,12 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(opt =>
     opt.Password.RequireLowercase = false;
     opt.Password.RequireUppercase = false;
     opt.Password.RequireNonAlphanumeric = false;
+    
+    opt.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
 })
     .AddRoles<IdentityRole<int>>()
-    .AddEntityFrameworkStores<SiteContext>();
+    .AddEntityFrameworkStores<SiteContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -53,8 +56,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // шукає дані про користувача у запиті (заголоки, кукіси, сесії)
-app.UseAuthorization(); // перевіряємо права
+app.UseAuthentication(); // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ)
+app.UseAuthorization(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 
 
 app.MapControllerRoute(
