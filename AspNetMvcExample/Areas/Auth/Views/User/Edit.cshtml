@@ -4,6 +4,7 @@
     ViewData["Title"] = Model.Email;
     var profileForm = ViewData["ProfileForm"] as ProfileForm;
     var resetPasswordForm = ViewData["ResetPasswordForm"] as ResetPasswordForm;
+    var rolesForm = ViewData["RolesForm"] as RolesForm;
 }
 <div>
 
@@ -30,6 +31,9 @@
                        class="btn btn-outline-success">Return</a>
                 </div>
             </form>
+        </div>
+        <div class="col-md-4">
+            @await Html.PartialAsync("_UserRolesForm", rolesForm, new ViewDataDictionary(ViewData) {{"user", Model}})
         </div>
         <div class="col-md-4">
             @await Html.PartialAsync("_ResetPasswordForm", resetPasswordForm, new ViewDataDictionary(ViewData) {{"user", Model}})
