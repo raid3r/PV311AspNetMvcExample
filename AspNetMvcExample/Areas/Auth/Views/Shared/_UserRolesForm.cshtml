@@ -1,0 +1,38 @@
+@model RolesForm
+@{
+    var user = ViewData["user"] as User;
+}
+
+<form method="post" enctype="multipart/form-data"
+      asp-area="Auth" asp-controller="User"
+      asp-action="ChangeRoles"
+      asp-route-id="@user.Id"
+>
+    <div class="card">
+        <div class="card-header"></div>
+        <div class="card-body">
+            <table class="table table-striped">
+
+                <tbody>
+                @for (var i = 0; i < Model.Roles.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <div class="mb-3 form-check">
+                                @Html.CheckBoxFor(x => x.Roles[i].IsSelected, new { @class = "form-check-input" })
+                            </div>
+                        </td>
+                        <td>
+                            @Html.HiddenFor(x => x.Roles[i].Id)
+                            <span class="badge bg-info">@Model.Roles[i].Name</span>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary" type="submit">Change</button>
+    </div>
+</form>
