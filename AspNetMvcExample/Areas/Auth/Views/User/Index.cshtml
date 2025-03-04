@@ -1,7 +1,10 @@
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
 @model System.Collections.Generic.List<AspNetMvcExample.Models.User>
 
 @{
     ViewData["Title"] = "List of users";
+    var userManager = ViewData["userManager"] as UserManager<User>;
 }
 <div>
 
@@ -30,20 +33,29 @@
                 </td>
                 <td>@item.FullName</td>
                 <td>@item.Email</td>
-                <td></td>
                 <td>
-                    <a  asp-area="Auth"
-                       asp-controller="User"
-                       asp-action="View"
-                       asp-route-id="@item.Id"
-                       class="btn btn-primary">View</a>
+                    @foreach (var role in await userManager.GetRolesAsync(item))
+                    {
+                        <span class="badge bg-info">@role</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Id.ToString() != User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value) 
+                    {
+                        <a asp-area="Auth"
+                           asp-controller="User"
+                           asp-action="View"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">View</a>
 
-                    <a asp-area="Auth"
-                       asp-controller="User"
-                       asp-action="Edit"
-                       asp-route-id="@item.Id"
-                       class="btn btn-primary">Edit</a>
-                   
+                        <a asp-area="Auth"
+                           asp-controller="User"
+                           asp-action="Edit"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">Edit</a>                        
+                    }
+                    
+
                 </td>
             </tr>
         }
