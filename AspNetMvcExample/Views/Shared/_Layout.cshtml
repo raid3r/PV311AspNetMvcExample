@@ -69,12 +69,18 @@
                                 <a class="nav-link d-flex align-content-center align-items-center dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     @if (!string.IsNullOrEmpty(avatarSrc))
                                     {
-                                        <div class="avatar mx-1" style="background-image: url(@avatarSrc"></div>
+                                        <div class="avatar mx-1" style="background-image: url(@avatarSrc)"></div>
                                     }
                                     <div>@User.Claims.First(x => x.Type == ClaimTypes.Email).Value</div>
                                     
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Auth" asp-controller="User" asp-action="Index">Users</a>
+                                        </li>    
+                                    }
                                     <li>
                                         <a class="dropdown-item" asp-area="Auth" asp-controller="Profile" asp-action="Index">Profile</a>
                                     </li>
