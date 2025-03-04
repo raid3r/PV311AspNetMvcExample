@@ -1,0 +1,17 @@
+@model ProfileForm
+
+<div class="mb-3">
+    @Html.LabelFor(x => x.FullName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.FullName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.FullName, null, new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(x => x.Phone, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Phone, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Phone, null, new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(x => x.Image, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Image, new { @class = "form-control", type = "file", accept = "*.jpg,*.jpeg,*.png" })
+    @Html.ValidationMessageFor(x => x.Image, null, new { @class = "text-danger" })
+</div>
