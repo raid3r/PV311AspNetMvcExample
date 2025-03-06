@@ -2,7 +2,7 @@
 @{
 }
 
-<div class="card">
+<div class="card review-target" data-id="@Model.Id">
     @if (Model.MainImageFile != null)
     {
         <img src="@Model.MainImageFile.Src" class="card-img-top" alt="@Model.Name">
@@ -17,13 +17,20 @@
             @foreach (var skill in Model.UserSkills)
             {
                 <span class="badge rounded-pill" style="background-color: @skill.Skill.Color">
-                    @if(skill.Skill.ImageFile != null)
+                    @if (skill.Skill.ImageFile != null)
                     {
-                        <img style="width: 20px;" src="@skill.Skill.ImageFile.Src" alt="@skill.Skill.Title" />
+                        <img style="width: 20px;" src="@skill.Skill.ImageFile.Src" alt="@skill.Skill.Title"/>
                     }
                     @skill.Skill.Title
-                    </span>
+                </span>
             }
         </div>
+    </div>
+
+    <div class="card-footer">
+        <button class="btn btn-primary-outline add-review">
+            <img style="width: 20px" src="~/img/like-svgrepo-com.svg" alt="like">
+            <span style="margin-left: 5px;">4.3</span>
+        </button>
     </div>
 </div>
