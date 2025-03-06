@@ -3,6 +3,7 @@ using System;
 using AspNetMvcExample.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetMvcExample.Migrations
 {
     [DbContext(typeof(SiteContext))]
-    partial class SiteContextModelSnapshot : ModelSnapshot
+    [Migration("20250306164934_UserInfoToUser")]
+    partial class UserInfoToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.13");
@@ -49,38 +52,6 @@ namespace AspNetMvcExample.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Profession");
-                });
-
-            modelBuilder.Entity("AspNetMvcExample.Models.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserInfoId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserInfoId");
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("AspNetMvcExample.Models.Skill", b =>
@@ -397,25 +368,6 @@ namespace AspNetMvcExample.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AspNetMvcExample.Models.Review", b =>
-                {
-                    b.HasOne("AspNetMvcExample.Models.User", "User")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AspNetMvcExample.Models.UserInfo", "UserInfo")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserInfo");
-                });
-
             modelBuilder.Entity("AspNetMvcExample.Models.Skill", b =>
                 {
                     b.HasOne("AspNetMvcExample.Models.ImageFile", "ImageFile")
@@ -543,14 +495,10 @@ namespace AspNetMvcExample.Migrations
             modelBuilder.Entity("AspNetMvcExample.Models.User", b =>
                 {
                     b.Navigation("Infos");
-
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("AspNetMvcExample.Models.UserInfo", b =>
                 {
-                    b.Navigation("Reviews");
-
                     b.Navigation("UserSkills");
                 });
 #pragma warning restore 612, 618
