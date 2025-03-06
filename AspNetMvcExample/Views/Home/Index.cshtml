@@ -7,15 +7,15 @@
 
 <div class="text-center">
     <h1 class="display-4">Hello world!</h1>
-    
+
 </div>
 
 <div class="d-flex align-items-center">
     <div class="mx-1">
         <input type="text" class="form-control" id="search-text">
     </div>
-        
-    
+
+
     <div class="mx-1 d-none">
         <select class="form-control">
             <option value=""></option>
@@ -25,9 +25,63 @@
     <button id="find" class="btn btn-secondary">Find</button>
 </div>
 
-<div id="search-results" style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 1rem;" class="my-4">
-    @await Html.PartialAsync("_SearchResult", infos);
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xml:space="preserve">
+    <defs>
+        <symbol id="star" height="35px" width="35px" viewBox="0 0 47.94 47.94">
+            <path d="M26.285,2.486l5.407,10.956c0.376,0.762,1.103,1.29,1.944,1.412l12.091,1.757
+	c2.118,0.308,2.963,2.91,1.431,4.403l-8.749,8.528c-0.608,0.593-0.886,1.448-0.742,2.285l2.065,12.042
+	c0.362,2.109-1.852,3.717-3.746,2.722l-10.814-5.685c-0.752-0.395-1.651-0.395-2.403,0l-10.814,5.685
+	c-1.894,0.996-4.108-0.613-3.746-2.722l2.065-12.042c0.144-0.837-0.134-1.692-0.742-2.285l-8.749-8.528
+	c-1.532-1.494-0.687-4.096,1.431-4.403l12.091-1.757c0.841-0.122,1.568-0.65,1.944-1.412l5.407-10.956
+	C22.602,0.567,25.338,0.567,26.285,2.486z"/>
+        </symbol>
+    </defs>
+</svg>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Add review</h5>
+            </div>
+            <div class="card-body">
+                <div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <svg class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                    </div>
+
+
+                </div>
+                <div>
+                    <textarea class="form-control" rows="3"></textarea>
+                </div>
+
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                <button class="btn btn-primary">Add review</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div id="search-results" style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 1rem;"
+     class="my-4"></div>
 
 @section Scripts {
     <script>
@@ -37,11 +91,72 @@
             const url = new URL("/Home/Search", window.location.href)
             url.searchParams.append("searchForm.text", text)
             
+                        
             await fetch(url.href).then(x => x.text()).then(html => {
                 document.getElementById("search-results").innerHTML = html
+
+                document.querySelectorAll(".add-review").forEach(x => {
+                    x.addEventListener("click", async e => {
+                        
+                        const id = e.target.closest(".review-target").getAttribute("data-id")
+
+                        let div = document.createElement("div")
+                        
+                        div.innerHTML = `<div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Add review</h5>
+            </div>
+            <div class="card-body">
+                <div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <svg data-value="1" class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg data-value="2" class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg data-value="3" class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg data-value="4" class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                        <svg data-value="5" class="star">
+                            <use xlink:href="#star"></use>
+                        </svg>
+                    </div>
+
+
+                </div>
+                <div>
+                    <textarea class="form-control" rows="3"></textarea>
+                </div>
+
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                <button data-id="${id}" class="btn btn-primary put-review">Add review</button>
+            </div>
+        </div>`
+
+                        div.querySelector("button.put-review").addEventListener("click", async e => {
+                            console.log("Send review " + id)
+                        })
+                        
+
+                        Swal.fire({
+                            //showOkButton: false,
+                            showCancelButton: false, // There won't be any cancel button
+                            showConfirmButton: false, // There won't be any confirm button
+                            html: `<div id="review-modal"></div>`,
+                        })
+                        document.getElementById("review-modal").appendChild(div)
+                    })
+                })
+
             })
-
-
         })
+
+        document.getElementById("find").click()
+
     </script>
 }
