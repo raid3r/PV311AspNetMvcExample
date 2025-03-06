@@ -4,6 +4,7 @@ using AspNetMvcExample.Models.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -15,25 +16,47 @@ public class UserInfoController(
     ILogger<UserInfoController> logger,
     SiteContext context,
     FileStorage fileStorage
-    ) : Controller
+) : Controller
 {
+    private int GetUserId()
+    {
+        return int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+    }
+
     // /UserInfo/Index
     /// <summary>
     /// Перегляд списку усіх наявних
     /// </summary>
     /// <returns></returns>
     [HttpGet("list")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View(
-            context.UserInfos
-            .Include(x => x.Profession)
-            .Include(x => x.UserSkills)
-            .ThenInclude(x => x.Skill)
-            .Include(x => x.ImageFiles)
-            .Include(x => x.MainImageFile)
-            .ToList()
+        if (User.IsInRole("Admin"))
+        {
+            return View(
+                await context.UserInfos
+                    .Include(x => x.Profession)
+                    .Include(x => x.UserSkills)
+                    .ThenInclude(x => x.Skill)
+                    .Include(x => x.ImageFiles)
+                    .Include(x => x.MainImageFile)
+                    .Include(x => x.Author)
+                    .ToListAsync()
             );
+        }
+
+        var userId = GetUserId();
+        return View(
+            await context.UserInfos
+                .Include(x => x.Profession)
+                .Include(x => x.UserSkills)
+                .ThenInclude(x => x.Skill)
+                .Include(x => x.ImageFiles)
+                .Include(x => x.MainImageFile)
+                .Include(x => x.Author)
+                .Where(x => x.Author != null && x.Author.Id == userId)
+                .ToListAsync()
+        );
     }
 
     /// <summary>
@@ -46,12 +69,12 @@ public class UserInfoController(
     {
         return View(
             context.UserInfos
-            .Include(x => x.UserSkills)
-            .ThenInclude(x => x.Skill)
-            .Include(x => x.ImageFiles)
-            .Include(x => x.MainImageFile)
-            .First(x => x.Id == id)
-            );
+                .Include(x => x.UserSkills)
+                .ThenInclude(x => x.Skill)
+                .Include(x => x.ImageFiles)
+                .Include(x => x.MainImageFile)
+                .First(x => x.Id == id)
+        );
     }
 
     /// <summary>
@@ -65,12 +88,12 @@ public class UserInfoController(
         return PartialView(
             "View",
             context.UserInfos
-            .Include(x => x.UserSkills)
-            .ThenInclude(x => x.Skill)
-            .Include(x => x.ImageFiles)
-            .Include(x => x.MainImageFile)
-            .First(x => x.Id == id)
-            );
+                .Include(x => x.UserSkills)
+                .ThenInclude(x => x.Skill)
+                .Include(x => x.ImageFiles)
+                .Include(x => x.MainImageFile)
+                .First(x => x.Id == id)
+        );
     }
 
     [HttpGet("create-info")]
@@ -88,6 +111,7 @@ public class UserInfoController(
         {
             return View(form);
         }
+
         var model = new UserInfo();
         form.Update(model);
 
@@ -98,8 +122,12 @@ public class UserInfoController(
                 var imageFile = await fileStorage.SaveAsync(item);
                 model.ImageFiles.Add(imageFile);
             }
+
             model.MainImageFile = model.ImageFiles.First();
         }
+
+        var userId = GetUserId();
+        model.Author = await context.Users.FirstAsync(x => x.Id == userId);
 
         context.UserInfos.Add(model);
         await context.SaveChangesAsync();
@@ -111,6 +139,7 @@ public class UserInfoController(
     public async Task<IActionResult> Edit(int id)
     {
         ViewData["id"] = id;
+
         var model = await context.UserInfos
             .Include(x => x.Profession)
             .Include(x => x.UserSkills)
@@ -119,17 +148,17 @@ public class UserInfoController(
             .Include(x => x.ImageFiles)
             .Include(x => x.MainImageFile)
             .FirstAsync(x => x.Id == id);
-        
+
         var form = new UserInfoForm(model);
         form.Professions = await context.Professions.ToListAsync();
-        
+
         var userSkills = model.UserSkills;
         var skills = await context.Skills
             .Include(x => x.ImageFile)
             .ToListAsync();
         var availableSkills = skills
             .Where(x => !userSkills.Select(x => x.Skill.Id)
-            .ToList().Contains(x.Id))
+                .ToList().Contains(x.Id))
             .ToList();
 
         ViewData["userSkills"] = userSkills;
@@ -142,7 +171,6 @@ public class UserInfoController(
     [HttpPost("{id:int}/edit")]
     public async Task<IActionResult> Edit(int id, [FromForm] UserInfoForm form)
     {
-
         var model = await context.UserInfos
             .Include(x => x.Profession)
             .Include(x => x.UserSkills)
@@ -163,7 +191,7 @@ public class UserInfoController(
                 .ToListAsync();
             var availableSkills = skills
                 .Where(x => !userSkills.Select(x => x.Skill.Id)
-                .ToList().Contains(x.Id))
+                    .ToList().Contains(x.Id))
                 .ToList();
 
             ViewData["userSkills"] = userSkills;
@@ -225,7 +253,7 @@ public class UserInfoController(
 
         //TODO form
         var skill = await context.Skills.FirstAsync(x => x.Id == data.SkillId);
-        
+
 
         if (null != user.UserSkills.FirstOrDefault(x => x.Skill.Id == skill.Id))
         {
@@ -284,7 +312,8 @@ public class UserInfoController(
     }
 
     [HttpPost("{id:int}/edit-with-js")]
-    public async Task<IActionResult> EditV2(int id, [FromForm] UserInfoForm form, [FromForm] List<UserSkillForm>? userSkillForms)
+    public async Task<IActionResult> EditV2(int id, [FromForm] UserInfoForm form,
+        [FromForm] List<UserSkillForm>? userSkillForms)
     {
         var skills = await context.Skills.ToListAsync();
         if (!ModelState.IsValid)
@@ -312,7 +341,7 @@ public class UserInfoController(
 
         form.Update(model);
         model.Profession = await context.Professions.FirstAsync(x => x.Id == form.ProfessionId);
-        
+
         var userSkills = model.UserSkills;
         foreach (var item in userSkillForms)
         {
@@ -343,10 +372,9 @@ public class UserInfoController(
                 }
             }
         }
+
         await context.SaveChangesAsync();
 
         return RedirectToAction("Index");
     }
-
-
 }
