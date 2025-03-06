@@ -13,6 +13,8 @@ public class SiteContext: IdentityDbContext<User, IdentityRole<int>, int>
     public virtual DbSet<UserSkill> UserSkills { get; set; }
     public virtual DbSet<ImageFile> ImageFiles { get; set; }
     public virtual DbSet<Profession> Professions { get; set; }
+    
+    public virtual DbSet<Review> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

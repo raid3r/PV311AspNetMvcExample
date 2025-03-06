@@ -10,18 +10,16 @@ public class UserInfo
     {
         ImageFiles = new List<ImageFile>();
         UserSkills = new List<UserSkill>();
+        Reviews = new List<Review>();
     }
 
     public int Id { get; set; }
 
-    [MaxLength(100)]
-    public string Name { get; set; } = null!;
+    [MaxLength(100)] public string Name { get; set; } = null!;
 
-    [MaxLength(100)]
-    public string? Email { get; set; }
+    [MaxLength(100)] public string? Email { get; set; }
 
-    [MaxLength(1000)]
-    public string? Description { get; set; }
+    [MaxLength(1000)] public string? Description { get; set; }
 
     public DateTime Birthday { get; set; }
 
@@ -38,4 +36,8 @@ public class UserInfo
     public virtual ICollection<UserSkill> UserSkills { get; set; }
 
     public virtual ImageFile? MainImageFile { get; set; }
+
+    public virtual User? Author { get; set; } = null!;
+    
+    public virtual ICollection<Review> Reviews { get; set; }
 }
