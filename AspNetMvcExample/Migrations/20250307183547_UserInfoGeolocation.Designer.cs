@@ -3,6 +3,7 @@ using System;
 using AspNetMvcExample.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetMvcExample.Migrations
 {
     [DbContext(typeof(SiteContext))]
-    partial class SiteContextModelSnapshot : ModelSnapshot
+    [Migration("20250307183547_UserInfoGeolocation")]
+    partial class UserInfoGeolocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.13");
@@ -207,10 +210,10 @@ namespace AspNetMvcExample.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
-                    b.Property<float?>("Lat")
+                    b.Property<float>("Lat")
                         .HasColumnType("REAL");
 
-                    b.Property<float?>("Lng")
+                    b.Property<float>("Lng")
                         .HasColumnType("REAL");
 
                     b.Property<int?>("MainImageFileId")
