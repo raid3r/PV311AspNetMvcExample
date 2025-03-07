@@ -2,12 +2,12 @@
 @{
     ViewData["Title"] = Model.Name;
 
+    var averageRating = Model.Reviews.Count > 0 ? Model.Reviews.Average(x => x.Rating) : 0;
     ImageFile? mainImage = Model.MainImageFile;
     if (Model.MainImageFile == null)
     {
         mainImage = Model.ImageFiles.FirstOrDefault();
     }
-
 }
 <div>
     <h1 class="display-4">Hello @Model.Name</h1>
@@ -20,10 +20,11 @@
         @if (mainImage != null)
         {
             @await Html.PartialAsync("_ImageComponent", mainImage,
-                     new ViewDataDictionary(ViewData){
-        {"maxWidth", "600px"},
-        {"borderColor", "red"}
-        })
+                new ViewDataDictionary(ViewData)
+                {
+                    { "maxWidth", "600px" },
+                    { "borderColor", "red" }
+                })
         }
     </div>
 
@@ -34,26 +35,58 @@
             {
                 <div style="position: relative">
                     @await Html.PartialAsync("_ImageComponent", galleryItem,
-                             new ViewDataDictionary(ViewData){
-            {"maxWidth", "300px"},
-            {"borderColor", "green"}
-            })
-                    <button data-id="@Model.Id" data-image-id="@galleryItem.Id" class="btn btn-sm btn-outline-success set-main-image" style="position: absolute; right: 10px; top: 10px;">Set main</button>
+                        new ViewDataDictionary(ViewData)
+                        {
+                            { "maxWidth", "300px" },
+                            { "borderColor", "green" }
+                        })
+                    <button data-id="@Model.Id" data-image-id="@galleryItem.Id"
+                            class="btn btn-sm btn-outline-success set-main-image"
+                            style="position: absolute; right: 10px; top: 10px;">Set main
+                    </button>
                 </div>
             }
         </div>
     }
-    <table class="table table-hover">
-        @* <tbody>
-        @foreach (var skill in Model.Skills)
+    <div>
+        @foreach (var skill in Model.UserSkills)
         {
-        <tr>
-        <td>@skill.Title</td>
-
-        </tr>
+            <span class="badge rounded-pill" style="background-color: @skill.Skill.Color">
+                @if (skill.Skill.ImageFile != null)
+                {
+                    <img style="width: 20px;" src="@skill.Skill.ImageFile.Src" alt="@skill.Skill.Title"/>
+                }
+                @skill.Skill.Title
+            </span>
         }
-        </tbody> *@
-    </table>
+    </div>
+    @if (Model.Reviews.Count > 0)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Average Rating: @averageRating.ToString("0.00") </h3>
+            </div>
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="col-md-3">
+                    <div class="card my-3">
+                        <div class="card-body">
+                            <p class="card-text">@review.Text</p>
+                            <p class="card-text">@review.Rating</p>
+                        </div>
+                        <div class="card-footer">
+                            @review.User.Email
+                            <div>
+                                <small class="text-muted">@review.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     <a asp-area=""
        asp-controller="UserInfo"
        asp-action="Index"
