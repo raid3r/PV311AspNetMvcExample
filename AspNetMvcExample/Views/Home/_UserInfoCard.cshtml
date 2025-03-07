@@ -1,5 +1,11 @@
 ﻿@model UserInfo
 @{
+    var averageRating = Model.Reviews.Count > 0 ? Model.Reviews.Average(x => x.Rating): 0;
+    var isAuthenticated = User.Identity.IsAuthenticated;
+    var userId = (int?)ViewData["userId"];
+    var allowAddReview = isAuthenticated && !Model.Reviews.Where(x => x.User?.Id == userId).Any();;
+   
+    
 }
 
 <div class="card review-target" data-id="@Model.Id">
@@ -28,9 +34,9 @@
     </div>
 
     <div class="card-footer">
-        <button class="btn btn-primary-outline add-review">
+        <button class="btn btn-primary-outline @(allowAddReview? "add-review": "")">
             <img style="width: 20px" src="~/img/like-svgrepo-com.svg" alt="like">
-            <span style="margin-left: 5px;">4.3</span>
+            <span style="margin-left: 5px;">@averageRating.ToString("0.00")</span>
         </button>
     </div>
 </div>
