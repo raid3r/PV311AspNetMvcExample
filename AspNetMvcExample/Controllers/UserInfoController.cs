@@ -73,6 +73,8 @@ public class UserInfoController(
                 .ThenInclude(x => x.Skill)
                 .Include(x => x.ImageFiles)
                 .Include(x => x.MainImageFile)
+                .Include(x => x.Reviews)
+                .ThenInclude(x => x.User)
                 .First(x => x.Id == id)
         );
     }
@@ -82,7 +84,7 @@ public class UserInfoController(
     /// </summary>
     /// <param name="id">Ід потрібного елементу</param>
     /// <returns></returns>
-    [HttpGet("{id:int}/view")]
+    [HttpGet("{id:int}/view-partial")]
     public IActionResult ViewPartial(int id) // 1 2
     {
         return PartialView(
@@ -92,6 +94,8 @@ public class UserInfoController(
                 .ThenInclude(x => x.Skill)
                 .Include(x => x.ImageFiles)
                 .Include(x => x.MainImageFile)
+                .Include(x => x.Reviews)
+                .ThenInclude(x => x.User)
                 .First(x => x.Id == id)
         );
     }
