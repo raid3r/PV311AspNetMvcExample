@@ -3,15 +3,16 @@ using AspNetMvcExample.Models.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AspNetMvcExample.Controllers;
 
 public class HomeController(
     ILogger<HomeController> logger,
     SiteContext context
-    ) : Controller
+) : Controller
 {
-
     //     /Home/Index
     public IActionResult Index([FromQuery] SearchForm searchForm)
     {
@@ -34,16 +35,24 @@ public class HomeController(
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
             .Include(x => x.ImageFiles)
+            .Include(x => x.Reviews)
+            .ThenInclude(x => x.User)
             .Include(x => x.MainImageFile);
 
-        if (!String.IsNullOrEmpty(searchForm.Text))
+        
+        
+        
+        if (!string.IsNullOrEmpty(searchForm.Text))
         {
             q = q.Where(x => EF.Functions.Like(x.Email.ToUpper(), $"%{searchForm.Text.ToUpper()}%"));
         }
 
+        int? userId = User.Identity.IsAuthenticated ? GetUserId() : null;
+        ViewData["userId"] = userId;
+        
         return PartialView("_SearchResult",
             q.ToList()
-            );
+        );
     }
 
     //     /Home/Privacy
@@ -94,20 +103,33 @@ public class HomeController(
     //}
 
 
+    [Authorize]
+    public async Task<IActionResult> AddReview(int id, [FromBody] ReviewForm reviewForm)
+    {
+        if (!ModelState.IsValid)
+        {
+            Response.StatusCode = 400;
+            return Json(new { Ok = false, Error = "Invalid data" });
+        }
 
+        var model = new Review();
+        model.Text = reviewForm.Text;
+        model.Rating = reviewForm.Rating;
+        model.UserInfo = await context.UserInfos.FirstAsync(x => x.Id == id);
+        model.CreatedAt = DateTime.Now;
 
+        var userId = GetUserId();
+        model.User = await context.Users.FirstAsync(x => x.Id == userId);
 
+        context.Reviews.Add(model);
+        await context.SaveChangesAsync();
+        return Json(new { Ok = true });
+    }
 
-
-
-
-
-
-
-
-
-
-
+    private int GetUserId()
+    {
+        return int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+    }
 
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
