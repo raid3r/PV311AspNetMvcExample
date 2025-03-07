@@ -48,3 +48,6 @@
     @Html.TextBoxFor(x => x.Gallery, new { @class = "form-control", type = "file", accept = "*.jpg,*.jpeg,*.png", multiple = true })
     @Html.ValidationMessageFor(x => x.Gallery, null, new { @class = "text-danger" })
 </div>
+<div class="map-edit" id="map"></div>
+@Html.HiddenFor(x => x.Lat)
+@Html.HiddenFor(x => x.Lng)
