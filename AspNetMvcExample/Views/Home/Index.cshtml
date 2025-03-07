@@ -90,24 +90,24 @@
 
             const url = new URL("/Home/Search", window.location.href)
             url.searchParams.append("searchForm.text", text)
-            
-                        
+
+
             await fetch(url.href).then(x => x.text()).then(html => {
                 document.getElementById("search-results").innerHTML = html
 
                 document.querySelectorAll(".add-review").forEach(x => {
                     x.addEventListener("click", async e => {
-                        
+
                         const id = e.target.closest(".review-target").getAttribute("data-id")
 
                         let div = document.createElement("div")
-                        
+
                         div.innerHTML = `<div class="card">
             <div class="card-header">
                 <h5 class="card-title">Add review</h5>
             </div>
             <div class="card-body">
-                <div>
+                <div data-selected-value="0">
                     <div class="d-flex align-items-center justify-content-center">
                         <svg data-value="1" class="star">
                             <use xlink:href="#star"></use>
@@ -138,10 +138,58 @@
             </div>
         </div>`
 
-                        div.querySelector("button.put-review").addEventListener("click", async e => {
-                            console.log("Send review " + id)
+                        // Stars
+                        div.querySelectorAll(".star[data-value]").forEach(el => {
+                            el.addEventListener("click", e => {
+                                let value = e.target.closest('[data-value]').getAttribute("data-value")
+                                console.log(e.target.closest('[data-value]'))
+                                let selected = div.querySelector("[data-selected-value]")
+
+                                console.log(value)
+
+                                selected.setAttribute("data-selected-value", value)
+                                Array.from(div.querySelectorAll(".star[data-value]")).forEach(x => {
+                                    if (x.getAttribute("data-value") <= value) {
+                                        x.classList.add("star-active")
+                                    } else {
+                                        x.classList.remove("star-active")
+                                    }
+                                })
+                            })
                         })
-                        
+
+                        // Button
+                        div.querySelector("button.put-review").addEventListener("click", async e => {
+
+                            const review = {
+                                rating: div.querySelector("[data-selected-value]").getAttribute("data-selected-value"),
+                                text: div.querySelector("textarea").value,
+                            }
+
+                            await fetch(`/Home/AddReview/${id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(review)
+                            }).then(x => x.json())
+                                .then(x => {
+                                    console.log(x)
+                                    Swal.fire({
+                                        title: 'Review added',
+                                        icon: 'success',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then(() => {
+                                        window.location.reload()
+                                    })
+                                })
+                                .catch(er => {
+                                    console.log(er)
+                                })
+
+
+                        })
 
                         Swal.fire({
                             //showOkButton: false,
