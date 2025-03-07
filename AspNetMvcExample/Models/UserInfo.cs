@@ -40,4 +40,7 @@ public class UserInfo
     public virtual User? Author { get; set; } = null!;
     
     public virtual ICollection<Review> Reviews { get; set; }
+    
+    public float? Lat {get; set;}
+    public float? Lng {get; set;}
 }
