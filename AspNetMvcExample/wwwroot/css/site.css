@@ -46,3 +46,7 @@ svg.star {
 svg.star.star-active {
     fill: goldenrod;
 }
+
+.map-edit {
+    height: 400px;
+}
