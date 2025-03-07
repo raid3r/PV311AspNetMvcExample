@@ -17,9 +17,13 @@ public class UserInfoForm
         ExpirienseYears = model.ExpirienseYears;
         Salary = model.Salary;
         ProfessionId = model.Profession?.Id;
-
+        Lat = model.Lat;
+        Lng = model.Lng;
     }
 
+    public float? Lat {get; set;}
+    public float? Lng {get; set;}
+    
     public void Update(UserInfo model)
     {
         model.Name = Name;
@@ -29,6 +33,8 @@ public class UserInfoForm
         model.IsActive = IsActive;
         model.ExpirienseYears = ExpirienseYears;
         model.Salary = Salary;
+        model.Lat = Lat;
+        model.Lng = Lng;
         //model.Profession = Professions[ProfessionId ?? 0];
     }
 
